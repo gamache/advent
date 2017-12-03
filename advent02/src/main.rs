@@ -76,7 +76,6 @@ fn get_line_checksum2(line: &str) -> i32 {
         let ni = match numbers[i].parse() { Ok(n) => n, _ => 0 };
         let nj = match numbers[j].parse() { Ok(n) => n, _ => 0 };
         if is_divisible(ni, nj) {
-          println!("{} {}", ni, nj);
           return ni / nj;
         }
       }
@@ -95,18 +94,20 @@ fn is_divisible(x: i32, y: i32) -> bool {
 }
 
 fn get_checksum2(input: String) -> i32 {
+  /* imperative version:
   let mut lines = input.lines();
-  let mut done = false;
   let mut checksum = 0;
-
+  let mut done = false;
   while !done {
     match lines.next() {
       None => { done  = true; },
       Some(line) => { checksum += get_line_checksum2(line); },
     }
   }
-
   return checksum;
+  */
+
+  return input.lines().map(|l| get_line_checksum2(l)).sum();
 }
 
 fn get_checksum2_from_file(filename: &str) -> Result<i32, Error> {
