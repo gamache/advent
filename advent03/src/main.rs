@@ -94,7 +94,7 @@ fn advance_spiral(spiral: &mut Spiral, calculate_values: bool) -> () {
   }
 
   spiral.cur = new;
-    spiral.i += 1;
+  spiral.i += 1;
 }
 
 // Returns the ith spiral.
