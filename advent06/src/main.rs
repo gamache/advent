@@ -6,7 +6,11 @@ use std::collections::HashMap;
 
 fn main() {
   match read_input("input.txt") {
-    Ok(input) => println!("Part 1 answer: {}", part1(&input)),
+    Ok(input) => {
+      let (part1, part2) = find_loop(&input);
+      println!("Part 1 answer: {}", part1);
+      println!("Part 2 answer: {}", part2);
+    },
     Err(e) => println!("Error: {}", e),
   }
 }
@@ -17,7 +21,8 @@ fn read_input(filename: &str) -> Result<String, Error> {
   return Ok(input);
 }
 
-fn part1(input: &str) -> i32 {
+// Returns (number of cycles before detecting loop, number of cycles in loop)
+fn find_loop(input: &str) -> (i32, i32) {
   // this needs to be at the top of this function because of the borrow
   // checker -- this means I do not understand what I am doing
   let mut banks: Vec<i32> = input
@@ -25,24 +30,33 @@ fn part1(input: &str) -> i32 {
     .flat_map(|n| n.parse())
     .collect();
 
-  let mut iters = 0;
+  let mut loop_cycles = 0;
+  let mut cycles = 0;
   let mut done = false;
-  let mut states: HashMap<String, bool> = HashMap::new();
+  let mut states: HashMap<String, i32> = HashMap::new();
 
   while !done {
     let state_str = banks_to_string(&banks);
-    if None == states.get(&state_str) {
-      states.insert(state_str, true);
-      let largest_index = get_index_of_largest_bank(&banks);
-      redistribute(&mut banks, largest_index);
-      iters += 1;
+    let mut insert_state = false;
+    match states.get(&state_str) {
+      None => {
+        insert_state = true;
+        let largest_index = get_index_of_largest_bank(&banks);
+        redistribute(&mut banks, largest_index);
+        cycles += 1;
+      },
+      Some(start_cycle) => {
+        done = true;
+        loop_cycles = (cycles + 1) - start_cycle;
+      },
     }
-    else {
-      done = true;
-    }
+
+    // I had to break this out to outsmart the borrow checker.
+    // Again, this means I do not understand what I am doing.
+    if insert_state { states.insert(state_str, cycles); }
   }
 
-  return iters;
+  return (cycles, loop_cycles);
 }
 
 // returns a string representing a bank's state
