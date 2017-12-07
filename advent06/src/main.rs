@@ -98,3 +98,4 @@ fn redistribute(banks: &mut Vec<i32>, index: usize) -> () {
     banks[i] += 1;
   }
 }
+
