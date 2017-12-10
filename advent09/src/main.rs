@@ -15,7 +15,7 @@ fn read_input(filename: &str) -> Result<String, Error> {
 fn main() {
   match read_input("input.txt") {
     Ok(input) => {
-      let (part1, part2) = answers(&input).unwrap();
+      let (part1, part2) = answers(&input);
       println!("Part 1 answer: {}", part1);
       println!("Part 2 answer: {}", part2);
     },
@@ -23,22 +23,18 @@ fn main() {
   }
 }
 
-fn answers(input: &str) -> Option<(i32, i32)> {
-  let part1 = get_input_score(input);
-  return Some((part1, 0));
-}
-
 
 const STATE_NORMAL: i32 = 0;
 const STATE_IN_GARBAGE: i32 = 1;
 const STATE_IN_BANG: i32 = 2;
 
-fn get_input_score(input: &str) -> i32 {
+fn answers(input: &str) -> (i32, i32) {
   let mut chars = input.chars();
   let mut done = false;
 
   let mut depth = 0;
   let mut score = 0;
+  let mut garbage_chars = 0;
   let mut state = STATE_NORMAL;
 
   while !done {
@@ -57,6 +53,9 @@ fn get_input_score(input: &str) -> i32 {
           else if c == '!' {
             state = STATE_IN_BANG;
           }
+          else {
+            garbage_chars += 1;
+          }
         }
         else if state == STATE_NORMAL {
           if c == '{' {
@@ -74,6 +73,6 @@ fn get_input_score(input: &str) -> i32 {
     }
   }
 
-  return score;
+  return (score, garbage_chars);
 }
 
