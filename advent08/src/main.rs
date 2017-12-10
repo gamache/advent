@@ -16,7 +16,11 @@ fn read_input(filename: &str) -> Result<String, Error> {
 
 fn main() {
   match read_input("input.txt") {
-    Ok(input) => { println!("Part 1 answer: {}", part1(&input).unwrap()); },
+    Ok(input) => {
+      let (part1, part2) = answers(&input).unwrap();
+      println!("Part 1 answer: {}", part1);
+      println!("Part 2 answer: {}", part2);
+    },
     Err(e) => println!("Error: {}", e),
   }
 }
@@ -36,12 +40,15 @@ struct Machine {
   instructions: Vec<Instruction>,
   ip: usize,
   halt: bool,
+  max_reg_val: i32,
 }
 
-fn part1(input: &str) -> Option<i32> {
+fn answers(input: &str) -> Option<(i32, i32)> {
   let mut machine = parse_input(input);
   machine.run();
-  return Some(*(machine.registers.values().max()?));
+  let part1 = *(machine.registers.values().max()?);
+  let part2 = machine.max_reg_val;
+  return Some((part1, part2));
 }
 
 impl Machine {
@@ -85,6 +92,10 @@ impl Machine {
         "dec" => { reg_val -= inst.val; },
         _ => {}
       }
+
+      if reg_val > self.max_reg_val {
+        self.max_reg_val = reg_val;
+      }
       self.registers.insert(inst.reg.clone(), reg_val);
     }
 
@@ -100,7 +111,8 @@ fn parse_input(input: &str) -> Machine {
     .collect();
   let ip: usize = 0;
   let halt = false;
-  return Machine { registers, instructions, ip, halt };
+  let max_reg_val = 0;
+  return Machine { registers, instructions, ip, halt, max_reg_val };
 }
 
 
