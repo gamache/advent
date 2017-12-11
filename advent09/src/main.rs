@@ -1,10 +1,6 @@
 use std::io::Error;
 use std::fs::File;
 use std::io::prelude::*;
-// use std::collections::HashMap;
-// #[macro_use] extern crate lazy_static;
-// extern crate regex;
-// use regex::Regex;
 
 fn read_input(filename: &str) -> Result<String, Error> {
   let mut input = String::new();
