@@ -15,8 +15,9 @@ fn read_input(filename: &str) -> Result<String, Error> {
 fn main() {
   match read_input("input.txt") {
     Ok(input) => {
-      let discs = parse_input(&input);
-      println!("Part 1 answer: {}", find_bottom_disc(&discs));
+      let mut discs = parse_input(&input);
+      let bottom_disc = find_bottom_disc(&discs).unwrap();
+      println!("Part 1 answer: {}", bottom_disc);
     },
     Err(e) => println!("Error: {}", e),
   }
@@ -25,19 +26,20 @@ fn main() {
 struct Disc {
   name: String,
   weight: i32,
+  above_weight: i32,
   aboves: Vec<String>,
 }
 
 
 // The bottom disc is the one that's not a key in the aboves map
-fn find_bottom_disc(discs: &Vec<Disc>) -> &str {
+fn find_bottom_disc(discs: &Vec<Disc>) -> Option<&str> {
   let aboves = get_aboves_map(discs);
   for disc in discs {
     if None == aboves.get(&disc.name) {
-      return &disc.name;
+      return Some(&disc.name);
     }
   }
-  return "boned";
+  return None;
 }
 
 // inserting(x, y) means that x is above y
@@ -52,11 +54,13 @@ fn get_aboves_map(discs: &Vec<Disc>) -> HashMap<String, String> {
 }
 
 fn parse_input(input: &str) -> Vec<Disc> {
-  return input
+  let mut discs = input
     .lines()
     .flat_map(|line| parse_line(line))
     .collect();
+  return discs;
 }
+
 
 fn parse_line<'a>(line: &str) -> Option<Disc> {
   let regex = Regex::new(r"(?x)
@@ -72,6 +76,7 @@ fn parse_line<'a>(line: &str) -> Option<Disc> {
   let name = caps.get(1)?.as_str().to_owned();
   let weight = caps.get(2)?.as_str().parse::<i32>().ok()?;
   let aboves: Vec<String>;
+  let above_weight = 0;
   match caps.get(3) {
     Some(cap) => {
       aboves = cap.as_str().split(", ").map(|s| s.to_owned()).collect();
@@ -81,5 +86,5 @@ fn parse_line<'a>(line: &str) -> Option<Disc> {
     },
   }
 
-  return Some(Disc{name, weight, aboves});
+  return Some(Disc{name, weight, aboves, above_weight});
 }
