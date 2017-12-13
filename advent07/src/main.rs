@@ -3,6 +3,8 @@ use std::fs::File;
 use std::io::prelude::*;
 use std::collections::HashMap;
 
+#[macro_use] extern crate lazy_static;
+
 extern crate regex;
 use regex::Regex;
 
@@ -23,6 +25,30 @@ fn main() {
   }
 }
 
+
+fn weight(discs: &Vec<Disc>, bottom_disc: &String) -> Vec<Disc> {
+  let mut disc_map: HashMap<String, Disc> = HashMap::new();
+  for disc in discs { disc_map.insert(disc.name.to_owned(), disc.clone()); }
+  assign_weight(&mut disc_map, bottom_disc);
+  return disc_map.values().collect();
+}
+
+fn assign_weight(disc_map: &mut HashMap<String, Disc>, disc_name: &String) -> i32 {
+  let disc = disc_map.get(disc_name).unwrap();
+  let mut above_weight = disc.above_weight;
+  for above in disc.aboves {
+    above_weight += assign_weight(&mut disc_map, &above);
+  }
+  let mut new_disc = disc.clone();
+  new_disc.above_weight = above_weight;
+  let total_weight = new_disc.weight + new_disc.above_weight;
+  disc_map.insert(new_disc.name.to_owned(), new_disc);
+  return total_weight;
+}
+
+
+
+#[derive(Clone)]
 struct Disc {
   name: String,
   weight: i32,
@@ -63,15 +89,17 @@ fn parse_input(input: &str) -> Vec<Disc> {
 
 
 fn parse_line<'a>(line: &str) -> Option<Disc> {
-  let regex = Regex::new(r"(?x)
-    ([a-z]+)         ## capture 1 = name
-    \s+
-    \((\d+)\)        ## capture 2 = weight
-    (?: \s+ -> \s+)?
-    ([a-z,\s]+)?     ## capture 3 = discs above
-  ").unwrap();
+  lazy_static! {
+    static ref LINE_REGEX: Regex = Regex::new(r"(?x)
+      ([a-z]+)         ## capture 1 = name
+      \s+
+      \((\d+)\)        ## capture 2 = weight
+      (?: \s+ -> \s+)?
+      ([a-z,\s]+)?     ## capture 3 = discs above
+    ").unwrap();
+  }
 
-  let caps = regex.captures(line)?;
+  let caps = LINE_REGEX.captures(line)?;
 
   let name = caps.get(1)?.as_str().to_owned();
   let weight = caps.get(2)?.as_str().parse::<i32>().ok()?;
