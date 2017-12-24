@@ -1,7 +1,7 @@
 use std::io::Error;
 use std::fs::File;
 use std::io::prelude::*;
-//use std::collections::HashMap;
+use std::collections::HashMap;
 //use std::collections::HashSet;
 
 
@@ -41,14 +41,14 @@ fn answers(input: &str) -> (String, String) {
   dance.do_moves(&moves);
   let answer1 = dance.order();
 
+  for i in 0..999_999_999 {
+    dance.do_moves(&moves);
+    //if dance.order() == "abcdefghijklmop" { println!("omg {}", i); }
+    //if i % 10_000 == 0 { println!("{}", i); }
+  }
+  let final_order = dance.order();
 
-  //for i in 1..1_000_000_000 {
-    //dance.do_moves(&moves);
-    //if i % 10000 == 0 { println!("{}", i); }
-  //}
-
-  let answer2 = dance.order();
-  return (answer1, order0);
+  return (answer1, final_order);
 }
 
 
@@ -142,6 +142,15 @@ struct Dance {
 }
 
 impl Dance {
+  fn apply_output_map(&mut self, output_map: &HashMap<usize,usize>) -> () {
+    let mut new_state: Vec<char> = Vec::new();
+    for i in 0..output_map.len() {
+      new_state.push(self.state[*(output_map.get(&i).unwrap())]);
+    }
+    self.state = new_state;
+    //println!("{}", self.order());
+  }
+
   fn do_moves(&mut self, moves: &Vec<DanceMove>) -> () {
     for m in moves {
       self.do_move(m);
