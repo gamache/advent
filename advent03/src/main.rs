@@ -33,7 +33,7 @@ struct Claim {
   ymax: i32
 }
 
-#[derive(Hash,PartialEq,Eq)]
+#[derive(Hash, PartialEq, Eq)]
 struct Cell {
   x: i32,
   y: i32
@@ -94,8 +94,7 @@ fn answer2(input: &str) -> Option<i32> {
 fn parse_line(line: &str) -> Option<Claim> {
   lazy_static! {
     static ref LINE_REGEX: Regex = Regex::new(r"(?x)
-      \#                    # literal number sign
-      (\d+) \s* @ \s*       # id
+      \# (\d+) \s* @ \s*    # id
       (\d+) , (\d+) : \s*   # x and y
       (\d+) x (\d+)         # width and height
     ").unwrap();
