@@ -30,8 +30,13 @@ fn is_case_variant(a: u8, b: u8) -> bool {
 }
 
 fn swap_case(c: u8) -> u8 {
-    if is_lower(c) { c + 32 }
-    else { c - 32 }
+    match is_letter(c) {
+        false => c,
+        true => match is_lower(c) {
+            true => c + 32,
+            false => c - 32
+        }
+    }
 }
 
 // performs a complete polymer reaction
