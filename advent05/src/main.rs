@@ -42,11 +42,9 @@ fn swap_case(c: u8) -> u8 {
 // performs a complete polymer reaction
 fn react(polymer: &str) -> String {
     let reacted = react1(polymer);
-    if reacted.len() == polymer.len() {
-        reacted
-    }
-    else {
-        react(reacted.as_ref())
+    match reacted.len() == polymer.len() {
+        true => reacted,
+        false => react(reacted.as_ref())
     }
 }
 
