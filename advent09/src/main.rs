@@ -5,6 +5,7 @@ use std::io::Error;
 use std::fs::File;
 use std::io::prelude::*;
 use std::collections::HashMap;
+use std::collections::LinkedList;
 use regex::Regex;
 
 fn read_input(filename: &str) -> Result<String, Error> {
@@ -27,19 +28,19 @@ fn main() {
 
 struct GameMachine {
     player_count: usize,
-    scores: HashMap<usize, usize>, // key is player number, 0-based
-    marbles: Vec<usize>,
-    current_marble_index: usize,
+    scores: HashMap<usize, usize>,
+    marbles: LinkedList<usize>,
     current_marble_number: usize,
 }
 
 impl GameMachine {
     fn new(player_count: usize) -> GameMachine {
+        let mut marbles = LinkedList::new();
+        marbles.push_front(0);
         GameMachine {
             player_count: player_count,
             scores: HashMap::new(),
-            marbles: vec![0],
-            current_marble_index: 0,
+            marbles: marbles,
             current_marble_number: 0,
         }
     }
@@ -50,26 +51,33 @@ impl GameMachine {
         match self.current_marble_number {
             n if n % 23 == 0 => {
                 let player = n % self.player_count;
-                let index = self.remove_index();
-                let score = n + self.marbles.remove(index);
+                let score = n + self.remove();
                 self.scores.entry(player).and_modify(|s| *s += score).or_insert(score);
-                self.current_marble_index = index;
             },
             n => {
-                let index = self.insert_index();
-                self.marbles.insert(index, n);
-                self.current_marble_index = index;
+                self.insert(n);
             }
         }
     }
 
-    fn insert_index(&self) -> usize {
-        1 + (self.current_marble_index + 1) % self.marbles.len()
+    fn rotate_cw(&mut self) -> () {
+        let marble = self.marbles.pop_front().unwrap();
+        self.marbles.push_back(marble);
     }
 
-    fn remove_index(&self) -> usize {
-        let len = self.marbles.len();
-        (self.current_marble_index + len - 7) % len
+    fn rotate_ccw(&mut self) -> () {
+        let marble = self.marbles.pop_back().unwrap();
+        self.marbles.push_front(marble);
+    }
+
+    fn insert(&mut self, marble: usize) -> () {
+        for _ in 0..2 { self.rotate_cw(); }
+        self.marbles.push_front(marble);
+    }
+
+    fn remove(&mut self) -> usize {
+        for _ in 0..7 { self.rotate_ccw(); }
+        self.marbles.pop_front().unwrap()
     }
 
     fn high_score(&self) -> usize {
