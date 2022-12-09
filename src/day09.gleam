@@ -3,9 +3,6 @@ import gleam/io
 import gleam/string
 import gleam/list
 import gleam/int
-import gleam/map
-import gleam/order
-import gleam/result
 import gleam/set
 
 type Direction {
@@ -83,12 +80,17 @@ fn move_tail(bridge: Bridge) -> Bridge {
       let new_y = avg(bridge.head_y, bridge.tail_y)
       Bridge(..bridge, tail_x: bridge.head_x, tail_y: new_y)
     }
+    // 2 spaces away diagonal
+    2, 2 -> {
+      let new_x = avg(bridge.head_x, bridge.tail_x)
+      let new_y = avg(bridge.head_y, bridge.tail_y)
+      Bridge(..bridge, tail_x: new_x, tail_y: new_y)
+    }
     _, _ -> {
       io.println("wtf")
       bridge
     }
   }
-  |> record_tail_position
 }
 
 fn record_tail_position(bridge: Bridge) -> Bridge {
@@ -105,6 +107,7 @@ fn run(bridge: Bridge, directions: List(Direction)) -> Bridge {
       bridge
       |> move_head(dir)
       |> move_tail
+      |> record_tail_position
       |> run(rest)
   }
 }
@@ -112,6 +115,48 @@ fn run(bridge: Bridge, directions: List(Direction)) -> Bridge {
 pub fn part1() {
   let bridge = run(new_bridge(), input())
   bridge.tail_positions
+  |> set.size()
+  |> int.to_string
+  |> io.println
+}
+
+fn run_part2(bridges: List(Bridge), directions: List(Direction)) -> List(Bridge) {
+  case directions {
+    [] -> bridges
+    [dir, ..rest_directions] -> {
+      assert [first_bridge, ..rest_bridges] = bridges
+      let new_first_bridge =
+        first_bridge
+        |> move_head(dir)
+        |> move_tail
+        |> record_tail_position
+      assert #(_, new_rest_bridges) =
+        list.map_fold(
+          rest_bridges,
+          new_first_bridge,
+          fn(a, b) {
+            let b =
+              Bridge(..b, head_x: a.tail_x, head_y: a.tail_y)
+              |> move_tail()
+              |> record_tail_position()
+            #(b, b)
+          },
+        )
+      let new_bridges = [new_first_bridge, ..new_rest_bridges]
+      run_part2(new_bridges, rest_directions)
+    }
+  }
+}
+
+pub fn part2() {
+  let directions = input()
+  let bridges = list.repeat(new_bridge(), 9)
+
+  assert Ok(last_bridge) =
+    run_part2(bridges, directions)
+    |> list.last
+
+  last_bridge.tail_positions
   |> set.size()
   |> int.to_string
   |> io.println
