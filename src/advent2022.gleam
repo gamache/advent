@@ -1,8 +1,8 @@
 import gleam/io
-import day10
+import day11
 
 pub fn main() {
   io.println("Hello from advent2022!")
-  day10.part1()
-  day10.part2()
+  day11.part1()
+  day11.part2()
 }
