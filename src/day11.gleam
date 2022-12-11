@@ -13,20 +13,11 @@ type Monkey {
     name: String,
     items: List(Int),
     operation: fn(Int) -> Int,
-    test: Int,
+    divisor: Int,
     true_monkey: String,
     false_monkey: String,
     items_handled: Int,
   )
-}
-
-fn print_monkey(monkey: Monkey) {
-  io.println("Monkey " <> monkey.name)
-  io.println("Items handled: " <> int.to_string(monkey.items_handled))
-  monkey.items
-  |> list.map(int.to_string)
-  |> string.join(", ")
-  |> io.println
 }
 
 type MonkeyMachine {
@@ -35,6 +26,8 @@ type MonkeyMachine {
     monkeys: map.Map(String, Monkey),
     // complete rounds played so far
     rounds: Int,
+    // product of divisors of all monkeys
+    divisor: Int,
   )
 }
 
@@ -44,7 +37,7 @@ fn input() -> MonkeyMachine {
   assert Ok(name_re) = regex.from_string("Monkey (\\d+):")
   assert Ok(items_re) = regex.from_string("Starting items: (.+)")
   assert Ok(op_re) = regex.from_string("Operation: new = old (.+)")
-  assert Ok(test_re) = regex.from_string("Test: divisible by (\\d+)")
+  assert Ok(divisor_re) = regex.from_string("Test: divisible by (\\d+)")
   assert Ok(true_re) = regex.from_string("If true: throw to monkey (.+)")
   assert Ok(false_re) = regex.from_string("If false: throw to monkey (.+)")
 
@@ -53,7 +46,14 @@ fn input() -> MonkeyMachine {
     |> string.trim
     |> string.split("\n\n")
     |> list.map(fn(spec_str) {
-      assert [name_line, items_line, op_line, test_line, true_line, false_line] =
+      assert [
+        name_line,
+        items_line,
+        op_line,
+        divisor_line,
+        true_line,
+        false_line,
+      ] =
         spec_str
         |> string.split("\n")
         |> list.map(string.trim)
@@ -97,9 +97,9 @@ fn input() -> MonkeyMachine {
           }
       }
 
-      assert [regex.Match(content: _, submatches: [option.Some(test_str)])] =
-        regex.scan(test_re, test_line)
-      assert Ok(test) = int.parse(test_str)
+      assert [regex.Match(content: _, submatches: [option.Some(divisor_str)])] =
+        regex.scan(divisor_re, divisor_line)
+      assert Ok(divisor) = int.parse(divisor_str)
 
       assert [regex.Match(content: _, submatches: [option.Some(true_monkey)])] =
         regex.scan(true_re, true_line)
@@ -111,7 +111,7 @@ fn input() -> MonkeyMachine {
         name: name,
         items: items,
         operation: operation,
-        test: test,
+        divisor: divisor,
         true_monkey: true_monkey,
         false_monkey: false_monkey,
         items_handled: 0,
@@ -123,12 +123,18 @@ fn input() -> MonkeyMachine {
     |> list.map(fn(m) { #(m.name, m) })
     |> map.from_list
 
-  MonkeyMachine(monkeys: monkeys_map, rounds: 0)
+  assert Ok(divisor) =
+    monkeys
+    |> list.map(fn(m) { m.divisor })
+    |> list.reduce(fn(acc, x) { acc * x })
+
+  MonkeyMachine(monkeys: monkeys_map, rounds: 0, divisor: divisor)
 }
 
 // OK so that takes care of the input parsing. Let's solve the damn thing
 
 fn assign_item(mm: MonkeyMachine, recipient: String, item: Int) -> MonkeyMachine {
+  assert Ok(item) = int.remainder(item, mm.divisor)
   assert Ok(monkey) = map.get(mm.monkeys, recipient)
   let monkey = Monkey(..monkey, items: list.append(monkey.items, [item]))
   MonkeyMachine(..mm, monkeys: map.insert(mm.monkeys, monkey.name, monkey))
@@ -143,7 +149,6 @@ fn run_round(mm: MonkeyMachine, divide_by_three: Bool) -> MonkeyMachine {
       mm,
       fn(acc, monkey_name) {
         assert Ok(monkey) = map.get(acc.monkeys, monkey_name)
-        print_monkey(monkey)
 
         let acc =
           list.fold(
@@ -155,7 +160,7 @@ fn run_round(mm: MonkeyMachine, divide_by_three: Bool) -> MonkeyMachine {
                 True -> item / 3
                 False -> item
               }
-              case int.modulo(item, monkey.test) {
+              case int.modulo(item, monkey.divisor) {
                 Ok(0) -> assign_item(acc2, monkey.true_monkey, item)
                 _ -> assign_item(acc2, monkey.false_monkey, item)
               }
@@ -168,15 +173,14 @@ fn run_round(mm: MonkeyMachine, divide_by_three: Bool) -> MonkeyMachine {
             items: [],
             items_handled: monkey.items_handled + list.length(monkey.items),
           )
+
         MonkeyMachine(
           ..acc,
           monkeys: map.insert(acc.monkeys, monkey.name, monkey),
         )
       },
     )
-  mm.rounds + 1
-  |> int.to_string
-  |> io.println()
+
   MonkeyMachine(..mm, rounds: mm.rounds + 1)
 }
 
