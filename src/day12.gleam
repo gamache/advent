@@ -15,16 +15,10 @@ const end = 69
 
 const lower_a = 97
 
+const lower_z = 122
+
 type SearchPath {
   SearchPath(grid: Grid, path: List(#(Int, Int)), length: Int, complete: Bool)
-}
-
-fn print_search_path(sp: SearchPath) {
-  assert [#(row, col), ..] = sp.path
-  io.println("Row " <> int.to_string(row))
-  io.println("Col " <> int.to_string(col))
-  io.println("Length " <> int.to_string(sp.length))
-  sp
 }
 
 fn next_move(
@@ -58,7 +52,7 @@ fn next_move(
   }
 }
 
-fn next_paths(search_path: SearchPath) -> List(SearchPath) {
+fn next_paths_part1(search_path: SearchPath) -> List(SearchPath) {
   assert [#(row, col), ..] = search_path.path
   assert Ok(height) = case map.get(search_path.grid.map, #(row, col)) {
     Ok(h) if h == start -> Ok(lower_a)
@@ -83,10 +77,11 @@ fn path_coord(search_path: SearchPath) -> #(Int, Int) {
 fn bfs(
   search_paths: List(SearchPath),
   visited: set.Set(#(Int, Int)),
+  next_paths_fn: fn(SearchPath) -> List(SearchPath),
 ) -> SearchPath {
-  let next_paths =
+  let next_paths: List(SearchPath) =
     search_paths
-    |> list.flat_map(next_paths)
+    |> list.flat_map(next_paths_fn)
     |> list.filter(fn(sp) { !set.contains(visited, path_coord(sp)) })
     |> list.fold(map.new(), fn(acc, sp) { map.insert(acc, path_coord(sp), sp) })
     |> map.values
@@ -98,12 +93,12 @@ fn bfs(
         next_paths
         |> list.map(path_coord)
         |> list.fold(visited, fn(acc, coord) { set.insert(acc, coord) })
-      bfs(next_paths, visited)
+      bfs(next_paths, visited, next_paths_fn)
     }
   }
 }
 
-fn find_start(grid: Grid) -> SearchPath {
+fn find(grid: Grid, height: Int) -> SearchPath {
   let coords =
     list.range(0, grid.rowmax)
     |> list.flat_map(fn(row) {
@@ -112,15 +107,74 @@ fn find_start(grid: Grid) -> SearchPath {
     })
 
   assert [start_coord] =
-    list.filter(coords, fn(coord) { Ok(start) == map.get(grid.map, coord) })
+    list.filter(coords, fn(coord) { Ok(height) == map.get(grid.map, coord) })
 
   SearchPath(grid: grid, path: [start_coord], length: 0, complete: False)
 }
 
 pub fn part1() {
-  let start_path = find_start(input())
-  let visited = set.insert(set.new(), path_coord(start_path))
-  let winner = bfs([start_path], visited)
+  let first_path = find(input(), start)
+  let visited = set.insert(set.new(), path_coord(first_path))
+  let winner = bfs([first_path], visited, next_paths_part1)
+
+  winner.length
+  |> int.to_string
+  |> io.println
+}
+
+fn next_paths_part2(search_path: SearchPath) -> List(SearchPath) {
+  assert [#(row, col), ..] = search_path.path
+  assert Ok(height) = case map.get(search_path.grid.map, #(row, col)) {
+    Ok(h) if h == end -> Ok(lower_z)
+    Ok(h) if h == start -> Ok(lower_a)
+    Ok(h) -> Ok(h)
+    _ -> Error(Nil)
+  }
+
+  [
+    next_move_part2(search_path, height, #(row, col - 1)),
+    next_move_part2(search_path, height, #(row, col + 1)),
+    next_move_part2(search_path, height, #(row - 1, col)),
+    next_move_part2(search_path, height, #(row + 1, col)),
+  ]
+  |> result.values
+}
+
+fn next_move_part2(
+  search_path: SearchPath,
+  height: Int,
+  coord: #(Int, Int),
+) -> Result(SearchPath, Nil) {
+  let path = search_path.path
+  let length = search_path.length
+  let min_height = height - 1
+
+  case list.contains(search_path.path, coord) {
+    True -> Error(Nil)
+    False ->
+      case map.get(search_path.grid.map, coord) {
+        Ok(h) if h >= min_height && h == lower_a ->
+          Ok(
+            SearchPath(
+              ..search_path,
+              path: [coord, ..path],
+              length: length + 1,
+              complete: True,
+            ),
+          )
+        Ok(h) if h >= min_height ->
+          Ok(
+            SearchPath(..search_path, path: [coord, ..path], length: length + 1),
+          )
+        _ -> Error(Nil)
+      }
+  }
+}
+
+pub fn part2() {
+  let first_path = find(input(), end)
+  let visited = set.insert(set.new(), path_coord(first_path))
+  let winner = bfs([first_path], visited, next_paths_part2)
 
   winner.length
   |> int.to_string
