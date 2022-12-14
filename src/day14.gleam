@@ -63,14 +63,17 @@ fn create_rock_path(g: grid.Grid, rock_path_str: String) -> grid.Grid {
   )
 }
 
-fn drop_all_sand(g: grid.Grid, count: Int) -> Int {
-  case drop_one_sand(g, #(0, 500)) {
-    Ok(g) -> drop_all_sand(g, count + 1)
+fn drop_all_sand_part1(g: grid.Grid, count: Int) -> Int {
+  case drop_one_sand_part1(g, #(0, 500)) {
+    Ok(g) -> drop_all_sand_part1(g, count + 1)
     Error(Nil) -> count
   }
 }
 
-fn drop_one_sand(g: grid.Grid, coord: #(Int, Int)) -> Result(grid.Grid, Nil) {
+fn drop_one_sand_part1(
+  g: grid.Grid,
+  coord: #(Int, Int),
+) -> Result(grid.Grid, Nil) {
   assert #(row, col) = coord
 
   case row == g.rowmax {
@@ -79,20 +82,17 @@ fn drop_one_sand(g: grid.Grid, coord: #(Int, Int)) -> Result(grid.Grid, Nil) {
       let below_coord = #(row + 1, col)
       let below_left_coord = #(row + 1, col - 1)
       let below_right_coord = #(row + 1, col + 1)
-      let below = map.get(g.map, below_coord)
-      let below_left = map.get(g.map, below_left_coord)
-      let below_right = map.get(g.map, below_right_coord)
-      case below {
+      case map.get(g.map, below_coord) {
         Ok(_) ->
-          case below_left {
+          case map.get(g.map, below_left_coord) {
             Ok(_) ->
-              case below_right {
+              case map.get(g.map, below_right_coord) {
                 Ok(_) -> Ok(grid.Grid(..g, map: map.insert(g.map, coord, "o")))
-                _ -> drop_one_sand(g, below_right_coord)
+                _ -> drop_one_sand_part1(g, below_right_coord)
               }
-            _ -> drop_one_sand(g, below_left_coord)
+            _ -> drop_one_sand_part1(g, below_left_coord)
           }
-        _ -> drop_one_sand(g, below_coord)
+        _ -> drop_one_sand_part1(g, below_coord)
       }
     }
   }
@@ -100,7 +100,53 @@ fn drop_one_sand(g: grid.Grid, coord: #(Int, Int)) -> Result(grid.Grid, Nil) {
 
 pub fn part1() {
   input()
-  |> drop_all_sand(0)
+  |> drop_all_sand_part1(0)
+  |> int.to_string
+  |> io.println
+}
+
+fn drop_all_sand_part2(g: grid.Grid, count: Int) -> Int {
+  case drop_one_sand_part2(g, #(0, 500)) {
+    Ok(g) -> drop_all_sand_part2(g, count + 1)
+    Error(Nil) -> count
+  }
+}
+
+fn drop_one_sand_part2(
+  g: grid.Grid,
+  coord: #(Int, Int),
+) -> Result(grid.Grid, Nil) {
+  assert #(row, col) = coord
+
+  case row == g.rowmax + 1 {
+    True -> Ok(grid.Grid(..g, map: map.insert(g.map, coord, "o")))
+    False -> {
+      let below_coord = #(row + 1, col)
+      let below_left_coord = #(row + 1, col - 1)
+      let below_right_coord = #(row + 1, col + 1)
+      case map.get(g.map, below_coord) {
+        Ok(_) ->
+          case map.get(g.map, below_left_coord) {
+            Ok(_) ->
+              case map.get(g.map, below_right_coord) {
+                Ok(_) ->
+                  case coord {
+                    #(0, 500) -> Error(Nil)
+                    _ -> Ok(grid.Grid(..g, map: map.insert(g.map, coord, "o")))
+                  }
+                _ -> drop_one_sand_part2(g, below_right_coord)
+              }
+            _ -> drop_one_sand_part2(g, below_left_coord)
+          }
+        _ -> drop_one_sand_part2(g, below_coord)
+      }
+    }
+  }
+}
+
+pub fn part2() {
+  input()
+  |> drop_all_sand_part2(1)
   |> int.to_string
   |> io.println
 }
