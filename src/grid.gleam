@@ -9,6 +9,10 @@ pub type Grid {
   Grid(map: map.Map(#(Int, Int), String), rowmax: Int, colmax: Int)
 }
 
+pub fn new_grid() -> Grid {
+  Grid(map.new(), rowmax: 0, colmax: 0)
+}
+
 pub fn from_string(str: String) -> Grid {
   let the_map =
     str
