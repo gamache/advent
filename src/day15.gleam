@@ -3,8 +3,6 @@ import gleam/io
 import gleam/string
 import gleam/list
 import gleam/int
-import gleam/map
-import gleam/result
 import gleam/regex
 import gleam/option
 
@@ -79,6 +77,46 @@ pub fn part1() {
     )
   })
   |> list.length
+  |> int.to_string
+  |> io.println
+}
+
+fn find_possible_beacon(
+  sensors: List(Sensor),
+  x: Int,
+  y: Int,
+  x_max: Int,
+  y_max: Int,
+) -> Result(Int, Nil) {
+  case x > x_max, y > y_max {
+    True, True -> Error(Nil)
+    True, False -> find_possible_beacon(sensors, 0, y + 1, x_max, y_max)
+    False, _ -> {
+      let next_x =
+        list.fold(
+          sensors,
+          x,
+          fn(acc, sensor) {
+            let dy = int.absolute_value(sensor.y - y)
+            let max_dx = int.max(0, sensor.beacon_distance - dy)
+            case int.absolute_value(sensor.x - x) {
+              dx if dx > max_dx -> acc
+              _ -> int.max(sensor.x + max_dx, acc)
+            }
+          },
+        )
+      case next_x == x {
+        True -> Ok(4000000 * x + y)
+        False -> find_possible_beacon(sensors, next_x + 1, y, x_max, y_max)
+      }
+    }
+  }
+}
+
+pub fn part2() {
+  assert Ok(i) = find_possible_beacon(input(), 0, 0, 4000000, 4000000)
+
+  i
   |> int.to_string
   |> io.println
 }
