@@ -1,3 +1,6 @@
+#[macro_use]
+extern crate lazy_static;
+
 use std::fs::read_to_string;
 
 fn read_lines(filename: &str) -> Vec<String> {
@@ -9,8 +12,8 @@ fn read_lines(filename: &str) -> Vec<String> {
         .collect()
 }
 
-mod day03;
+mod day04;
 
 fn main() {
-    day03::run(read_lines("inputs/day03.txt"));
+    day04::run(read_lines("inputs/day04.txt"));
 }
