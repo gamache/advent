@@ -9,8 +9,8 @@ fn read_lines(filename: &str) -> Vec<String> {
         .collect()
 }
 
-mod day06;
+mod day07;
 
 fn main() {
-    day06::run(read_lines("inputs/day06.txt"));
+    day07::run(read_lines("inputs/day07.txt"));
 }
