@@ -1,18 +1,23 @@
 use std::collections::HashMap;
 
+#[derive(Eq, PartialEq, Clone)]
 pub struct CharGrid {
-    grid: HashMap<(usize, usize), char>,
-    rowmax: usize,
-    colmax: usize,
+    pub grid: HashMap<(usize, usize), char>,
+    pub rowmax: usize,
+    pub colmax: usize,
 }
 
 impl CharGrid {
-    pub fn from_lines(lines: &Vec<String>) -> CharGrid {
-        let mut cg = CharGrid {
+    pub fn new() -> CharGrid {
+        CharGrid {
             grid: HashMap::new(),
             rowmax: 0,
             colmax: 0,
-        };
+        }
+    }
+
+    pub fn from_lines(lines: &Vec<String>) -> CharGrid {
+        let mut cg = CharGrid::new();
 
         let mut row = 0;
         let mut col = 0;
@@ -40,11 +45,17 @@ impl CharGrid {
     }
 
     pub fn print(&self) -> () {
+        print!("{}", self.to_string());
+    }
+
+    pub fn to_string(&self) -> String {
+        let mut s = String::new();
         for row in 0..=self.rowmax {
             for col in 0..=self.colmax {
-                print!("{}", self.get(row, col).unwrap());
+                s.push(*self.get(row, col).unwrap());
             }
-            println!("");
+            s.push('\n');
         }
+        s
     }
 }
