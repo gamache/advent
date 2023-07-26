@@ -10,8 +10,8 @@ fn read_lines(filename: &str) -> Vec<String> {
 }
 
 //mod chargrid;
-mod day12;
+mod day13;
 
 fn main() {
-    day12::run(read_lines("inputs/day12.txt"));
+    day13::run(read_lines("inputs/day13.txt"));
 }
