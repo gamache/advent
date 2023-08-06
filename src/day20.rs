@@ -1,5 +1,6 @@
 use regex::Regex;
 use std::collections::HashMap;
+use std::collections::HashSet;
 use std::fs::read_to_string;
 
 #[derive(Clone, Debug)]
@@ -301,53 +302,125 @@ pub fn run(filename: &str) {
 
     println!("{product}");
 
-    /*
-
     // ok part 2 go
     let mut image: HashMap<(usize, usize), bool> = HashMap::new();
-    let mut imagex: usize = 0;
-    let mut imagey: usize = 0;
+    let mut imagexmax: usize = 0;
+    let mut imageymax: usize = 0;
 
     for spacex in space.xmin..=space.xmax {
         for spacey in space.ymin..=space.ymax {
             let tile = space.tiles.get(&(spacex, spacey)).unwrap();
-            for x in 1..9 {
-                for y in 1..9 {
+            for x in 1..tile.xmax {
+                for y in 1..tile.ymax {
+                    let imagex = (tile.xmax - 1) * (spacex - space.xmin) as usize + x;
+                    let imagey = (tile.ymax - 1) * (spacey - space.ymin) as usize + y;
+                    if imagexmax < imagex {
+                        imagexmax = imagex;
+                    }
+                    if imageymax < imagey {
+                        imageymax = imagey;
+                    }
                     match tile.grid.get(&(x, y)) {
                         Some(true) => {
-                            image.insert((imagex + x - 1, imagey + y - 1), true);
+                            image.insert((imagex, imagey), true);
                         }
                         _ => {}
                     }
                 }
             }
-            imagey += 8;
         }
-        imagex += 8;
     }
 
-    let xmax = (space.xmax - space.xmin) * 8 - 1;
-    let ymax = (space.ymax - space.ymin) * 8 - 1;
-     */
+    // let's use a Tile for this because it has rotate and flip already
+    let mut image_tile = Tile {
+        id: 666,
+        grid: image,
+        xmax: imagexmax,
+        ymax: imageymax,
+    };
+
+    let mut sea_monster_coords = find_sea_monster_coords(&image_tile);
+    if sea_monster_coords.len() == 0 {
+        image_tile = image_tile.rotate();
+        sea_monster_coords = find_sea_monster_coords(&image_tile);
+    }
+    if sea_monster_coords.len() == 0 {
+        image_tile = image_tile.rotate();
+        sea_monster_coords = find_sea_monster_coords(&image_tile);
+    }
+    if sea_monster_coords.len() == 0 {
+        image_tile = image_tile.rotate();
+        sea_monster_coords = find_sea_monster_coords(&image_tile);
+    }
+    if sea_monster_coords.len() == 0 {
+        image_tile = image_tile.flip();
+        sea_monster_coords = find_sea_monster_coords(&image_tile);
+    }
+    if sea_monster_coords.len() == 0 {
+        image_tile = image_tile.rotate();
+        sea_monster_coords = find_sea_monster_coords(&image_tile);
+    }
+    if sea_monster_coords.len() == 0 {
+        image_tile = image_tile.rotate();
+        sea_monster_coords = find_sea_monster_coords(&image_tile);
+    }
+    if sea_monster_coords.len() == 0 {
+        image_tile = image_tile.rotate();
+        sea_monster_coords = find_sea_monster_coords(&image_tile);
+    }
+
+    let roughness = image_tile
+        .grid
+        .into_keys()
+        .filter(|coord| !sea_monster_coords.contains(coord))
+        .count();
+
+    println!("{roughness}");
 }
 
 lazy_static::lazy_static! {
-static ref SEA_MONSTER_COORDS: Vec<(usize, usize)> = vec![
-    (0, 1),
-    (1, 0),
-    (4, 0),
-    (5, 1),
-    (6, 1),
-    (7, 0),
-    (10, 0),
-    (11, 1),
-    (12, 1),
-    (13, 0),
-    (16, 0),
-    (17, 1),
-    (18, 1),
-    (18, 2),
-    (19, 1),
-];
+    static ref SEA_MONSTER_COORDS: Vec<(usize, usize)> = vec![
+        (0, 1),
+        (1, 0),
+        (4, 0),
+        (5, 1),
+        (6, 1),
+        (7, 0),
+        (10, 0),
+        (11, 1),
+        (12, 1),
+        (13, 0),
+        (16, 0),
+        (17, 1),
+        (18, 1),
+        (18, 2),
+        (19, 1),
+    ];
+}
 
+fn find_sea_monster_coords(tile: &Tile) -> HashSet<(usize, usize)> {
+    let mut coords: HashSet<(usize, usize)> = HashSet::new();
+
+    for x in 0..=tile.xmax {
+        for y in 0..=tile.ymax {
+            if sea_monster_at(&tile, x, y) {
+                SEA_MONSTER_COORDS
+                    .iter()
+                    .map(|(xx, yy)| (xx + x, yy + y))
+                    .for_each(|coord| {
+                        coords.insert(coord);
+                    });
+            }
+        }
+    }
+
+    coords
+}
+
+fn sea_monster_at(tile: &Tile, x: usize, y: usize) -> bool {
+    let spaces_filled = SEA_MONSTER_COORDS
+        .iter()
+        .filter(|(xx, yy)| tile.grid.get(&(xx + x, yy + y)) != None)
+        .count();
+    spaces_filled == SEA_MONSTER_COORDS.len()
 }
