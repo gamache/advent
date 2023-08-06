@@ -4,13 +4,11 @@ use std::fs::read_to_string;
 
 #[derive(Clone, Debug)]
 struct Tile {
-    // (0,0) is bottom left corner, (9,0) is bottom right
+    // (0,0) is bottom left corner
     grid: HashMap<(usize, usize), bool>,
     id: usize,
-    xmin: i32,
-    xmax: i32,
-    ymin: i32,
-    ymax: i32,
+    xmax: usize,
+    ymax: usize,
 }
 
 impl Tile {
@@ -18,18 +16,16 @@ impl Tile {
         Tile {
             grid: HashMap::new(),
             id: 0,
-            xmin: 0,
             xmax: 0,
-            ymin: 0,
             ymax: 0,
         }
     }
 
     fn print(&self) {
         println!("Tile {}:", self.id);
-        for yy in 0..10 {
-            let y = 9 - yy;
-            for x in 0..10 {
+        for yy in 0..=self.ymax {
+            let y = self.ymax - yy;
+            for x in 0..=self.xmax {
                 match self.grid.get(&(x, y)) {
                     Some(true) => print!("#"),
                     _ => print!("."),
@@ -60,6 +56,12 @@ impl Tile {
                     x = 0;
                     y -= 1;
                     for c in line.chars() {
+                        if x > tile.xmax {
+                            tile.xmax = x;
+                        }
+                        if y > tile.ymax {
+                            tile.ymax = y;
+                        }
                         if c == '#' {
                             tile.grid.insert((x, y), true);
                         }
@@ -75,11 +77,13 @@ impl Tile {
     fn rotate(&self) -> Tile {
         let mut tile = Tile::new();
         tile.id = self.id;
+        tile.xmax = self.ymax;
+        tile.ymax = self.xmax;
 
-        for x in 0..10 {
-            for y in 0..10 {
+        for x in 0..=self.xmax {
+            for y in 0..=self.ymax {
+                let new_x = tile.xmax - y;
                 let new_y = x;
-                let new_x = 9 - y;
                 if self.grid.get(&(x, y)) != None {
                     tile.grid.insert((new_x, new_y), true);
                 }
@@ -92,11 +96,13 @@ impl Tile {
     fn flip(&self) -> Tile {
         let mut tile = Tile::new();
         tile.id = self.id;
+        tile.xmax = self.xmax;
+        tile.ymax = self.ymax;
 
-        for x in 0..10 {
-            for y in 0..10 {
-                let new_y = 9 - x;
-                let new_x = 9 - y;
+        for x in 0..=self.xmax {
+            for y in 0..=self.ymax {
+                let new_x = tile.xmax - x;
+                let new_y = y;
                 if self.grid.get(&(x, y)) != None {
                     tile.grid.insert((new_x, new_y), true);
                 }
@@ -106,18 +112,20 @@ impl Tile {
         tile
     }
 
+    // only works correctly for equal tile widths
     fn vertical_match(top_tile: &Tile, bottom_tile: &Tile) -> bool {
-        for x in 0..10 {
-            if top_tile.grid.get(&(x, 0)) != bottom_tile.grid.get(&(x, 9)) {
+        for x in 0..=top_tile.xmax {
+            if top_tile.grid.get(&(x, 0)) != bottom_tile.grid.get(&(x, bottom_tile.ymax)) {
                 return false;
             }
         }
         true
     }
 
+    // only works correctly for equal tile heights
     fn horizontal_match(left_tile: &Tile, right_tile: &Tile) -> bool {
-        for y in 0..10 {
-            if left_tile.grid.get(&(9, y)) != right_tile.grid.get(&(0, y)) {
+        for y in 0..=left_tile.ymax {
+            if left_tile.grid.get(&(left_tile.xmax, y)) != right_tile.grid.get(&(0, y)) {
                 return false;
             }
         }
@@ -293,6 +301,8 @@ pub fn run(filename: &str) {
 
     println!("{product}");
 
+    /*
+
     // ok part 2 go
     let mut image: HashMap<(usize, usize), bool> = HashMap::new();
     let mut imagex: usize = 0;
@@ -318,9 +328,11 @@ pub fn run(filename: &str) {
 
     let xmax = (space.xmax - space.xmin) * 8 - 1;
     let ymax = (space.ymax - space.ymin) * 8 - 1;
+     */
 }
 
-const SEA_MONSTER_COORDS: Vec<(usize, usize)> = vec![
+lazy_static::lazy_static! {
+static ref SEA_MONSTER_COORDS: Vec<(usize, usize)> = vec![
     (0, 1),
     (1, 0),
     (4, 0),
@@ -337,9 +349,5 @@ const SEA_MONSTER_COORDS: Vec<(usize, usize)> = vec![
     (18, 2),
     (19, 1),
 ];
-const SEA_MONSTER_X: usize = 20;
-const SEA_MONSTER_Y: usize = 3;
 
-fn sea_monster(image: &HashMap<(usize, usize), bool>, x: usize, y: usize) -> bool {
-    SEA_MONSTER_COORDS.iter().map
 }
