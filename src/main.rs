@@ -9,15 +9,8 @@ fn read_lines(filename: &str) -> Vec<String> {
         .collect()
 }
 
-mod day23;
+mod day25;
 
 fn main() {
-    day23::run(
-        "158937462"
-            // "389125467"
-            .chars()
-            .map(|c| c.to_string().parse::<usize>().unwrap())
-            .collect(),
-    );
-    // day24::run(read_lines("inputs/day24.txt"));
+    day25::run(read_lines("inputs/day25.txt"));
 }
