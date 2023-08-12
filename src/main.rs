@@ -19,4 +19,5 @@ fn main() {
             .map(|c| c.to_string().parse::<usize>().unwrap())
             .collect(),
     );
+    // day24::run(read_lines("inputs/day24.txt"));
 }
