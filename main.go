@@ -21,5 +21,5 @@ func GetLines(filename string) []string {
 }
 
 func main() {
-	Day02()
+	Day03()
 }
