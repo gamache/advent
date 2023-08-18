@@ -6,7 +6,7 @@ import (
 	"strings"
 )
 
-func check(e error) {
+func Check(e error) {
 	if e != nil {
 		panic(e)
 	}
@@ -14,13 +14,12 @@ func check(e error) {
 
 func GetLines(filename string) []string {
 	data, err := os.ReadFile(filename)
-	check(err)
+	Check(err)
 
 	lines := strings.Split(strings.TrimSpace(string(data)), "\n")
 	return lines
 }
 
 func main() {
-	lines := GetLines("inputs/day01.txt")
-	Day01(lines)
+	Day02()
 }
