@@ -6,6 +6,10 @@ import (
 	"strings"
 )
 
+func main() {
+	Day06()
+}
+
 func Check(e error) {
 	if e != nil {
 		panic(e)
@@ -20,6 +24,7 @@ func GetLines(filename string) []string {
 	return lines
 }
 
-func main() {
-	Day05()
+type Coord struct {
+	x int
+	y int
 }

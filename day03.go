@@ -4,11 +4,6 @@ import (
 	"fmt"
 )
 
-type Coord struct {
-	x int
-	y int
-}
-
 func Day03() {
 	lines := GetLines("inputs/day03.txt")
 
