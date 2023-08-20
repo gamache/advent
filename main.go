@@ -3,11 +3,12 @@ package main
 import (
 	// "fmt"
 	"os"
+	"regexp"
 	"strings"
 )
 
 func main() {
-	Day06()
+	Day07()
 }
 
 func Check(e error) {
@@ -27,4 +28,20 @@ func GetLines(filename string) []string {
 type Coord struct {
 	x int
 	y int
+}
+
+func NamedCaptures(re *regexp.Regexp, haystack string) map[string]string {
+	match := re.FindStringSubmatch(haystack)
+	if match != nil {
+		result := make(map[string]string)
+		for i, name := range re.SubexpNames() {
+			if i != 0 && name != "" {
+				result[name] = match[i]
+				// fmt.Printf("%v %v\n", name, match[i])
+			}
+		}
+		return result
+	} else {
+		return nil
+	}
 }
