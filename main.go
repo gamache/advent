@@ -8,7 +8,7 @@ import (
 )
 
 func main() {
-	Day11()
+	Day12()
 }
 
 func Check(e error) {
@@ -37,7 +37,6 @@ func NamedCaptures(re *regexp.Regexp, haystack string) map[string]string {
 		for i, name := range re.SubexpNames() {
 			if i != 0 && name != "" {
 				result[name] = match[i]
-				// fmt.Printf("%v %v\n", name, match[i])
 			}
 		}
 		return result
