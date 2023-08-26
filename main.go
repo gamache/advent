@@ -8,7 +8,7 @@ import (
 )
 
 func main() {
-	Day16()
+	Day17()
 }
 
 func Check(e error) {
