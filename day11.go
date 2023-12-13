@@ -1,5 +1,11 @@
 package main
 
+func Day11() {}
+
+/*
+//// I removed this because I didn't want to refactor after making
+//// strgrid/main.go
+
 import (
 	"fmt"
 	"strings"
@@ -167,3 +173,4 @@ func sumGalaxyDistances(sg StrGrid) int {
 
 	return sum
 }
+*/
