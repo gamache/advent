@@ -16,19 +16,38 @@ type StrGrid struct {
 	Grid   map[Coord]string
 }
 
-func (sg StrGrid) Print() {
+func (sg StrGrid) ToString() string {
+	output := ""
 	for row := 0; row <= sg.RowMax; row++ {
 		for col := 0; col <= sg.ColMax; col++ {
-			c, ok := sg.Grid[Coord{row, col}]
+			str, ok := sg.Grid[Coord{row, col}]
 			if ok {
-				fmt.Print(c)
+				output += str
 			} else {
-				fmt.Print(".")
+				output += "."
 			}
 		}
-		fmt.Println("")
+		output += "\n"
 	}
-	fmt.Println("")
+	return output
+}
+
+func (sg StrGrid) Print() {
+	fmt.Println(sg.ToString())
+}
+
+func (sg StrGrid) Clockwise() StrGrid {
+	newGrid := make(map[Coord]string, len(sg.Grid))
+	for crd, str := range sg.Grid {
+		newRow := crd.Col
+		newCol := sg.RowMax - crd.Row
+		newGrid[Coord{newRow, newCol}] = str
+	}
+	return StrGrid{
+		RowMax: sg.ColMax,
+		ColMax: sg.RowMax,
+		Grid:   newGrid,
+	}
 }
 
 func FromString(str string) StrGrid {
