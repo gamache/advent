@@ -22,7 +22,7 @@ func Day12() {
 	// part 2
 
 	wg := sync.WaitGroup{}
-	n := 512
+	n := 1024
 	work := make(chan string, n)
 	results := make(chan int, n)
 	for i := 0; i < n; i++ {
@@ -36,44 +36,18 @@ func Day12() {
 				}
 				parts := strings.Split(line, " ")
 
-				v := countValidArrangements(parts[0], parts[1])
-				v2 := countValidArrangements(
-					parts[0]+"?"+parts[0],
-					parts[1]+","+parts[1],
-				)
-				joinRatio := float32(v2) / float32(v)
-
-				if joinRatio == float32(int32(joinRatio)) {
-					// Easy way
-					r := int(joinRatio)
-					r = v * r * r * r * r
-					results <- r
-					continue
+				if strings.HasPrefix(parts[0], "#") || strings.HasSuffix(parts[0], "#") {
+					v := countValidArrangements(parts[0], parts[1])
+					results <- v * v * v * v * v
+				} else {
+					v5 := countValidArrangements(
+						parts[0]+"?"+parts[0]+"?"+parts[0]+"?"+parts[0]+"?"+parts[0],
+						parts[1]+","+parts[1]+","+parts[1]+","+parts[1]+","+parts[1],
+					)
+					results <- v5
 				}
-
-				v3 := countValidArrangements(
-					parts[0]+"?"+parts[0]+"?"+parts[0],
-					parts[1]+","+parts[1]+","+parts[1],
-				)
-				joinRatio32 := float32(v3) / float32(v2)
-
-				v4 := countValidArrangements(
-					parts[0]+"?"+parts[0]+"?"+parts[0]+"?"+parts[0],
-					parts[1]+","+parts[1]+","+parts[1]+","+parts[1],
-				)
-				joinRatio43 := float32(v4) / float32(v3)
-				v5 := countValidArrangements(
-					parts[0]+"?"+parts[0]+"?"+parts[0]+"?"+parts[0]+"?"+parts[0],
-					parts[1]+","+parts[1]+","+parts[1]+","+parts[1]+","+parts[1],
-				)
-				joinRatio54 := float32(v5) / float32(v4)
-
-				fmt.Println(line)
-				fmt.Printf("%v %v %v %v %v\n", v, v2, v3, v4, v5)
-				fmt.Printf("%v %v %v %v\n\n", joinRatio, joinRatio32, joinRatio43, joinRatio54)
-
-				results <- v5
 			}
+			// }
 		}()
 	}
 
@@ -94,6 +68,8 @@ func Day12() {
 
 	// 630375483449 is too low
 	// 888491519337 is too high
+	// 1381452962534: also too high
+	// 28126144534 is low lol
 	fmt.Println(sum)
 
 	wg.Wait()
@@ -109,43 +85,53 @@ func countValidArrangements(springMapStr, patternStr string) int {
 		pattern[i] = p
 	}
 
-	return cva(
-		strings.Split(springMapStr+".", ""),
-		pattern,
-		0,
-	)
-}
+	springMap := strings.Split(springMapStr+".", "")
+	states := map[string]int{}
 
-func cva(springMap []string, pattern []int, startAt int) int {
-	for i := startAt; i < len(springMap); i++ {
-		if springMap[i] == "?" {
-			sm1 := make([]string, len(springMap))
-			copy(sm1, springMap)
-			sm1[i] = "."
-			va1 := 0
-			if followsPatternSoFar(sm1, pattern) {
-				va1 = cva(sm1, pattern, i+1)
+	var cva func(int) int
+	cva = func(startAt int) int {
+		last := "X"
+		if startAt > 0 {
+			last = springMap[startAt-1]
+		}
+		for i := startAt; i < len(springMap); i++ {
+			if springMap[i] == "?" {
+				springMap[i] = "."
+				va1 := 0
+				if followsPatternSoFar(springMap, pattern) {
+					va1 = cva(i + 1)
+				}
+
+				springMap[i] = "#"
+				va2 := 0
+				if followsPatternSoFar(springMap, pattern) {
+					va2 = cva(i + 1)
+				}
+
+				springMap[i] = "?"
+
+				return va1 + va2
+			} else if springMap[i] == "#" && last == "." {
+				state := strings.Join(springMap[i+1:], "")
+				va, ok := states[state]
+				if ok {
+					return va
+				} else {
+					states[state] = cva(i + 1)
+					return states[state]
+				}
 			}
+			last = springMap[i]
+		}
 
-			sm2 := make([]string, len(springMap))
-			copy(sm2, springMap)
-			sm2[i] = "#"
-			va2 := 0
-			if followsPatternSoFar(sm2, pattern) {
-				va2 = cva(sm2, pattern, i+1)
-			}
-
-			return va1 + va2
+		if followsPattern(springMap, pattern) {
+			return 1
+		} else {
+			return 0
 		}
 	}
-
-	if followsPattern(springMap, pattern) {
-		return 1
-	} else {
-		return 0
-	}
+	return cva(0)
 }
-
 func followsPattern(springMap []string, pattern []int) bool {
 	count := 0
 	last := "."
