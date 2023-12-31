@@ -41,7 +41,7 @@ func AbsInt(i int) int {
 
 func Day17() {
 	sg := FromLines(GetLines("inputs/day17.txt"))
-	sg = FromLines(GetLines("inputs/example17.txt"))
+	// sg = FromLines(GetLines("inputs/example17.txt"))
 
 	// let's do A*
 
@@ -69,7 +69,6 @@ func Day17() {
 		if right != prev && prev3.Col-cur.Col != -3 {
 			next = append(next, right)
 		}
-		// fmt.Println(next)
 		return next
 	}
 
@@ -91,13 +90,13 @@ func Day17() {
 		h := func(crd Coord) int {
 			r := AbsInt(end.Row - crd.Row)
 			c := AbsInt(end.Col - crd.Col)
-			// return 0 Dijkstra mode
+			return 0 //Dijkstra mode
 			return r + c
 		}
 
 		startPath := Path{
 			nodes: []Coord{
-				// it's easier in nextCoords if there are always three previous nodes
+				// we can skip bounds-checking if there are always three previous nodes
 				{-5, -5},
 				{-5, -5},
 				{-5, -5},
@@ -174,7 +173,7 @@ func Day17() {
 					}
 					cheapest, ok := cheapestPathTo[next]
 					// fmt.Printf("our cost %v cheapest %v\n", nextPath.cost, cheapest.cost)
-					if !ok || nextPath.cost < cheapest.cost || next == end {
+					if true || !ok || nextPath.cost < cheapest.cost || next == end {
 						//cheapestPathTo[next] = nextPath
 						pushIt = true
 						// fmt.Printf("push it %v %v\n", next, nextPath.estCost)
