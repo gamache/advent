@@ -74,8 +74,6 @@ func Day20() {
 		retVal := false
 	PulseLoop:
 		for {
-			// fmt.Println(pulses)
-			// fmt.Println(nodes)
 			if len(pulses) == 0 {
 				break PulseLoop
 			}
@@ -84,7 +82,6 @@ func Day20() {
 				retVal = true
 			}
 
-			// fmt.Println(pulse)
 			pulseCounts[pulse.level]++
 
 			pulses = pulses[1:]
@@ -133,7 +130,6 @@ func Day20() {
 	// part 2
 	// absolutely could not have done this without examining the graph by eye
 
-	nodes = getNodes()
 	/*
 		graphviz := func(nodes map[string]Node) {
 			fmt.Println("digraph {")
@@ -152,13 +148,11 @@ func Day20() {
 		graphviz(nodes)
 	*/
 
-	// inverters we care about: cx qr gm bf
-
-	// inverters := []string{"cx", "qr", "gm", "bf"}
 	inverters := []string{"qk", "zs", "kr", "kf"}
 	factors := make([]int, 4)
 	for f, inv := range inverters {
 		i := 0
+		nodes = getNodes()
 		for {
 			i++
 			if pressButton(nodes, inv) {
@@ -167,7 +161,6 @@ func Day20() {
 			}
 		}
 	}
-	fmt.Println(factors)
 	fmt.Println(LCM(factors))
 
 	// 197569289532457 too low, not +1 either
