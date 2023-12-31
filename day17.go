@@ -4,16 +4,38 @@ import (
 	"container/heap"
 	"fmt"
 	"strconv"
+	// "time"
 )
 
 type Path struct {
-	nodes   []Coord
-	cost    int
-	estCost int
+	nodes               []Coord
+	cost                int
+	estCost             int
+	movesInCurDirection int
 }
 
 func (p Path) PathStr() string {
 	return fmt.Sprint(p.nodes[len(p.nodes)-4:])
+}
+func (p Path) PathStr2() string {
+	moves := p.movesInCurDirection
+	canMove := 0 // any direction
+	if moves > 0 && moves < 4 {
+		// only straight
+		canMove = 1
+	} else if moves >= 10 {
+		// only turn
+		canMove = 2
+	}
+	canMove = moves
+
+	return fmt.Sprintf("%v %v", p.nodes[len(p.nodes)-2:], canMove)
+}
+
+func (p Path) Clone() Path {
+	nodes := make([]Coord, len(p.nodes))
+	copy(nodes, p.nodes)
+	return Path{nodes, p.cost, p.estCost, p.movesInCurDirection}
 }
 
 type PathHeap []Path
@@ -40,16 +62,24 @@ func AbsInt(i int) int {
 }
 
 func Day17() {
+	day17Part1()
+	day17Part2()
+}
+
+func day17Part1() {
 	sg := FromLines(GetLines("inputs/day17.txt"))
-	// sg = FromLines(GetLines("inputs/example17.txt"))
+	sg = FromLines(GetLines("inputs/example17.txt"))
 
 	// let's do A*
 
 	nextCoords := func(p Path) []Coord {
 		next := []Coord{}
 
+		// movesInCurDirection := 0
+
 		cur := p.nodes[len(p.nodes)-1]
 		prev := p.nodes[len(p.nodes)-2]
+
 		prev3 := p.nodes[len(p.nodes)-4]
 
 		above := Coord{cur.Row - 1, cur.Col}
@@ -90,7 +120,7 @@ func Day17() {
 		h := func(crd Coord) int {
 			r := AbsInt(end.Row - crd.Row)
 			c := AbsInt(end.Col - crd.Col)
-			return 0 //Dijkstra mode
+			// return 0 //Dijkstra mode
 			return r + c
 		}
 
@@ -107,7 +137,7 @@ func Day17() {
 		}
 		paths := &PathHeap{startPath}
 		pathSet := map[string]int{startPath.PathStr(): 0}
-		fmt.Println(startPath.PathStr())
+		// fmt.Println(startPath.PathStr())
 
 		heap.Init(paths)
 		cheapestPathTo := map[Coord]Path{}
@@ -122,11 +152,9 @@ func Day17() {
 			path := heap.Pop(paths).(Path)
 			delete(pathSet, fmt.Sprint(path.nodes))
 
-			fmt.Printf("%v\t%v\t%v\n", paths.Len(), path.cost, path.estCost)
-			// visualize(path)
+			// fmt.Printf("%v\t%v\t%v\n", paths.Len(), path.cost, path.estCost)
 
 			if path.nodes[len(path.nodes)-1] == end {
-				fmt.Println("we're there")
 				break
 			}
 
@@ -194,13 +222,154 @@ func Day17() {
 	}
 
 	path := aStar(sg, Coord{0, 0}, Coord{sg.RowMax, sg.ColMax})
-	visualize(path)
+	if false {
+		visualize(path)
+	}
+	fmt.Println(path.cost)
 
-	// 2115 too high
-	// 837 too high
-	// 825 too high
-	// no it is not 827 that comes up too
-	// it is not 819, which is what I find with Dijkstra
+}
+
+func day17Part2() {
+	sg := FromLines(GetLines("inputs/day17.txt"))
+	// sg = FromLines(GetLines("inputs/example17.txt"))
+
+	// let's do A*
+
+	nextPaths := func(p Path, costs StrGrid) []Path {
+		paths := []Path{}
+		appendPathWithCoord := func(p Path, c Coord, isStraight bool) {
+			costStr, ok := costs.Grid[c]
+			if ok {
+				cost, _ := strconv.Atoi(costStr)
+				newPath := p.Clone()
+				newPath.nodes = append(newPath.nodes, c)
+				newPath.cost += cost
+				newPath.estCost = newPath.cost + AbsInt(costs.RowMax-c.Row) + AbsInt(costs.ColMax-c.Col)
+				if isStraight {
+					newPath.movesInCurDirection = p.movesInCurDirection + 1
+				} else {
+					newPath.movesInCurDirection = 1
+				}
+				paths = append(paths, newPath)
+			}
+		}
+
+		cur := p.nodes[len(p.nodes)-1]
+		prev := p.nodes[len(p.nodes)-2]
+
+		drow := cur.Row - prev.Row
+		dcol := cur.Col - prev.Col
+		nextStraight := Coord{cur.Row + drow, cur.Col + dcol}
+
+		above := Coord{cur.Row - 1, cur.Col}
+		below := Coord{cur.Row + 1, cur.Col}
+		left := Coord{cur.Row, cur.Col - 1}
+		right := Coord{cur.Row, cur.Col + 1}
+
+		if p.movesInCurDirection == 0 {
+			// first move; any direction will do
+			appendPathWithCoord(p, above, false)
+			appendPathWithCoord(p, below, false)
+			appendPathWithCoord(p, left, false)
+			appendPathWithCoord(p, right, false)
+		} else {
+			if p.movesInCurDirection >= 4 {
+				// may or must turn
+				if above != prev && above != nextStraight {
+					appendPathWithCoord(p, above, false)
+				}
+				if below != prev && below != nextStraight {
+					appendPathWithCoord(p, below, false)
+				}
+				if left != prev && left != nextStraight {
+					appendPathWithCoord(p, left, false)
+				}
+				if right != prev && right != nextStraight {
+					appendPathWithCoord(p, right, false)
+				}
+			}
+			if p.movesInCurDirection < 10 {
+				// may or must go straight
+				appendPathWithCoord(p, nextStraight, true)
+			}
+		}
+
+		return paths
+	}
+
+	visualize := func(path Path) {
+		vg := StrGrid{
+			sg.RowMax,
+			sg.ColMax,
+			map[Coord]string{},
+		}
+		for i, crd := range path.nodes {
+			n := (i - 3) % 10
+			vg.Grid[crd] = fmt.Sprint(n)
+		}
+		vg.Print()
+	}
+
+	aStar := func(costs StrGrid, start, end Coord) Path {
+		startPath := Path{
+			nodes: []Coord{
+				{-5, -5},
+				{-5, -5},
+				{-5, -5},
+				start,
+			},
+			cost:                0,
+			estCost:             0,
+			movesInCurDirection: 0,
+		}
+		paths := &PathHeap{startPath}
+		pathSet := map[string]int{startPath.PathStr(): 0}
+		// fmt.Println(startPath.PathStr())
+
+		heap.Init(paths)
+		cheapestPathTo := map[Coord]Path{}
+		cheapestPathTo[start] = startPath
+
+		// Paths:
+		for {
+			if paths.Len() == 0 {
+				fmt.Println("oops")
+				break
+			}
+			path := heap.Pop(paths).(Path)
+			curCoord := path.nodes[len(path.nodes)-1]
+			// time.Sleep(time.Second)
+			delete(pathSet, path.PathStr2())
+
+			cheapest, ok := cheapestPathTo[end]
+			if ok && path.cost > cheapest.cost {
+				break
+			}
+
+			if curCoord == end {
+				// fmt.Println(path.cost)
+				if !ok || cheapest.cost > path.cost {
+					fmt.Println(path)
+					cheapestPathTo[end] = path
+				}
+				continue
+			}
+
+			// Neighbors:
+			for _, nextPath := range nextPaths(path, costs) {
+				prevCost, ok := pathSet[nextPath.PathStr2()]
+				if !ok || prevCost > nextPath.cost {
+					pathSet[nextPath.PathStr2()] = nextPath.cost
+					heap.Push(paths, nextPath)
+				}
+			}
+		}
+
+		return cheapestPathTo[end]
+	}
+
+	path := aStar(sg, Coord{0, 0}, Coord{sg.RowMax, sg.ColMax})
+	visualize(path)
 	fmt.Println(path.cost)
 
 }
