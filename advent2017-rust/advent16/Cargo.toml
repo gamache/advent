@@ -1,8 +1,0 @@
-[package]
-name = "advent16"
-version = "0.1.0"
-authors = ["pete gamache <pete@gamache.org>"]
-
-[dependencies]
-lazy_static = "1.0"
-regex = "0.2"

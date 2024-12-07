@@ -1,6 +1,0 @@
-[package]
-name = "advent14"
-version = "0.1.0"
-authors = ["pete gamache <pete@gamache.org>"]
-
-[dependencies]
