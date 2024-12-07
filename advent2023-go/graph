@@ -1,0 +1,169 @@
+digraph {
+vq [shape=ellipse]
+vq -> gm
+bb [shape=ellipse]
+bb -> hg
+bb -> bf
+fq [shape=ellipse]
+fq -> qn
+qk [shape=triangle]
+qk -> gf
+cx [shape=triangle]
+cx -> ff
+cx -> vx
+cx -> zs
+hr [shape=ellipse]
+hr -> fq
+hr -> gm
+vl [shape=ellipse]
+vl -> vx
+vl -> cx
+zg [shape=ellipse]
+zg -> bb
+sf [shape=ellipse]
+sf -> qr
+gm [shape=triangle]
+gm -> kg
+gm -> kf
+gm -> fq
+gm -> nc
+gm -> lf
+dl [shape=ellipse]
+dl -> bf
+vx [shape=ellipse]
+vx -> cv
+ff [shape=ellipse]
+ff -> vl
+ff -> cx
+broadcaster [shape=ellipse]
+broadcaster -> kg
+broadcaster -> dz
+broadcaster -> ff
+broadcaster -> bq
+dp [shape=ellipse]
+dp -> mh
+jb [shape=ellipse]
+jb -> bf
+jb -> kp
+rj [shape=ellipse]
+rj -> xt
+rj -> cx
+pf [shape=ellipse]
+pf -> xk
+pf -> qr
+tz [shape=ellipse]
+tz -> mf
+tz -> cx
+qr [shape=triangle]
+qr -> dp
+qr -> bq
+qr -> nd
+qr -> rz
+qr -> mg
+qr -> qk
+qr -> mh
+lf [shape=ellipse]
+lf -> hr
+zs [shape=triangle]
+zs -> gf
+mg [shape=ellipse]
+mg -> dp
+bf [shape=triangle]
+bf -> dz
+bf -> zg
+bf -> kr
+bf -> sl
+bf -> fk
+bf -> kp
+bf -> dc
+rp [shape=ellipse]
+rp -> jb
+rp -> bf
+dc [shape=ellipse]
+dc -> fk
+xk [shape=ellipse]
+xk -> qr
+xk -> sf
+kr [shape=triangle]
+kr -> gf
+nc [shape=ellipse]
+nc -> gb
+ls [shape=ellipse]
+ls -> lf
+ls -> gm
+rz [shape=ellipse]
+rz -> tj
+kp [shape=ellipse]
+kp -> pz
+bh [shape=ellipse]
+bh -> vq
+bh -> gm
+gf [shape=triangle]
+gf -> rx
+kg [shape=ellipse]
+kg -> gm
+kg -> pt
+dz [shape=ellipse]
+dz -> bf
+dz -> dc
+hm [shape=ellipse]
+hm -> cx
+hm -> tz
+jp [shape=ellipse]
+jp -> cx
+jp -> kt
+mh [shape=ellipse]
+mh -> rz
+pz [shape=ellipse]
+pz -> zg
+pz -> bf
+hg [shape=ellipse]
+hg -> dl
+hg -> bf
+zz [shape=ellipse]
+zz -> pf
+zz -> qr
+kf [shape=triangle]
+kf -> gf
+vv [shape=ellipse]
+vv -> nc
+vv -> gm
+sl [shape=ellipse]
+sl -> rp
+sx [shape=ellipse]
+sx -> cx
+sx -> rj
+fk [shape=ellipse]
+fk -> sl
+tj [shape=ellipse]
+tj -> nd
+tj -> qr
+gb [shape=ellipse]
+gb -> ls
+gb -> gm
+qn [shape=ellipse]
+qn -> gm
+qn -> bh
+pt [shape=ellipse]
+pt -> gm
+pt -> vv
+mf [shape=ellipse]
+mf -> cx
+mf -> sx
+nd [shape=ellipse]
+nd -> jx
+xt [shape=ellipse]
+xt -> cx
+cv [shape=ellipse]
+cv -> jp
+cv -> cx
+bq [shape=ellipse]
+bq -> qr
+bq -> mg
+jx [shape=ellipse]
+jx -> qr
+jx -> zz
+kt [shape=ellipse]
+kt -> hm
+kt -> cx
+}
