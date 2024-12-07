@@ -5,6 +5,8 @@ import (
 	"fmt"
 )
 
+const c coord = {};
+
 type Trail struct {
 	coords map[Coord]int
 	cur    Coord
